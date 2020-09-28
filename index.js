@@ -40,6 +40,9 @@ class ButtonEvents extends EventEmitter {
     this.buttonState = STATE_IDLE;
     this.lastValue = (this.Config.usePullUp ? 1 : 0); // assume module starts with button not pressed
     this.currentValue = this.lastValue;
+    this.debounce = false;
+    this.deboucneTimer = null;
+    this.emitTimer = null;
   }
 
   // called by parent when general purpose input value changes
@@ -49,11 +52,17 @@ class ButtonEvents extends EventEmitter {
     if (!this.debounce) this.debounceStart(value);
   }
 
+  // call before destruction to cleanup resources
+  cleanUp () {
+    clearTimeout(this.debounceTimer);
+    clearTimeout(this.emitTimer);
+  }
+
   // start the input signal debouce
   debounceStart (value) {
     this.currentValue = value;
     this.debounce = true;
-    setTimeout(this.debounceComplete.bind(this), this.Config.timing.debounce);
+    this.debounceTimer = setTimeout(this.debounceComplete.bind(this), this.Config.timing.debounce);
   }
 
   // debouce timed out, complete button change
