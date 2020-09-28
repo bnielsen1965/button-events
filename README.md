@@ -17,6 +17,7 @@ Create an instance of button-events for each button that requires events, add li
 for the desired button events, and call the gpioChange() method each time the button
 input state changes.
 
+Example
 ```javascript
 const ButtonEvents = require('button-events');
 
@@ -29,6 +30,27 @@ upEvents.on('clicked', () => {
 
 // each time gpio input for up button changes call the upEvents gpioChange() method
 gpio.on('change', (value) => upEvents.gpioChange(value));
+```
+**NOTE** The example assumes the *gpio* object has been instantiated from some gpio library.
+
+A cleanup() method is provided to disable a buttone events instance, remove all listeners
+and clear any active timers when the button events instance is no longer required.
+
+Example
+```javascript
+const ButtonEvents = require('button-events');
+
+// create event processor for up button
+let bevents = new ButtonEvents();
+// watch for 'clicked' events on the up button
+bevents.on('button_event', (type) => {
+  console.log(`Buttone event type ${type}`);
+});
+
+// run for 30 seconds then cleanup
+setTimeout(() => {
+  bevents.cleanup();
+}, 30000);
 ```
 
 

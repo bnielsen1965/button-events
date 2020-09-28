@@ -1,6 +1,7 @@
 
 const EventEmitter = require('events').EventEmitter;
 
+const STATE_DISABLED = 0;
 const STATE_IDLE = 1;
 const STATE_PRESSED = 2;
 const STATE_CLICKED = 3;
@@ -47,13 +48,16 @@ class ButtonEvents extends EventEmitter {
 
   // called by parent when general purpose input value changes
   gpioChange (value) {
+    if (this.buttonState === STATE_DISABLED) return;
     value = (this.Config.usePullUp ? !value : value); // invert if pull up
     this.lastValue = value;
     if (!this.debounce) this.debounceStart(value);
   }
 
   // call before destruction to cleanup resources
-  cleanUp () {
+  cleanup () {
+    this.buttonState = STATE_DISABLED;
+    this.removeAllListeners();
     clearTimeout(this.debounceTimer);
     clearTimeout(this.emitTimer);
   }
