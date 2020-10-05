@@ -40,7 +40,6 @@ class ButtonEvents extends EventEmitter {
     this.Config.timing = Object.assign({}, Defaults.timing, this.Config.timing); // deep copy of timing defaults
     this.buttonState = STATE_IDLE;
     this.lastValue = (this.Config.usePullUp ? 1 : 0); // assume module starts with button not pressed
-    this.currentValue = this.lastValue;
     this.debounce = false;
     this.debounceTimer = null;
     this.emitTimer = null;
@@ -51,7 +50,7 @@ class ButtonEvents extends EventEmitter {
     if (this.buttonState === STATE_DISABLED) return;
     value = (this.Config.usePullUp ? !value : value); // invert if pull up
     this.lastValue = value;
-    if (!this.debounce) this.debounceStart(value);
+    if (!this.debounce) this.debounceStart();
   }
 
   // call before destruction to cleanup resources
@@ -63,8 +62,7 @@ class ButtonEvents extends EventEmitter {
   }
 
   // start the input signal debouce
-  debounceStart (value) {
-    this.currentValue = value;
+  debounceStart () {
     this.debounce = true;
     this.debounceTimer = setTimeout(this.debounceComplete.bind(this), this.Config.timing.debounce);
   }
