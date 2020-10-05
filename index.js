@@ -42,7 +42,7 @@ class ButtonEvents extends EventEmitter {
     this.lastValue = (this.Config.usePullUp ? 1 : 0); // assume module starts with button not pressed
     this.currentValue = this.lastValue;
     this.debounce = false;
-    this.deboucneTimer = null;
+    this.debounceTimer = null;
     this.emitTimer = null;
   }
 
