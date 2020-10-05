@@ -51,7 +51,10 @@ class ButtonEvents extends EventEmitter {
     value = (this.Config.usePullUp ? !value : value); // invert if pull up
     this.lastValue = value;
     if (this.debounce) return "debounced";
-    if (!this.Config.timing.debounce) return "final";
+    if (!this.Config.timing.debounce) {
+      this.processLastValue();
+      return "final";
+    }
     this.debounceStart();
     return "accepted";
   }
@@ -72,6 +75,13 @@ class ButtonEvents extends EventEmitter {
 
   // debounce timed out, complete button change
   debounceComplete () {
+    this.processLastValue();
+    // debounce complete
+    this.debounce = false;
+  }
+
+  // process the last button input value
+  processLastValue () {
     this.emit(EVENT_BUTTON_CHANGED);
     if (this.lastValue) {
       // debounced button press
@@ -120,8 +130,6 @@ class ButtonEvents extends EventEmitter {
           break;
       }
     }
-    // debounce complete
-    this.debounce = false;
   }
 
   // emit event for the current button state
