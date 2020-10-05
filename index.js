@@ -47,10 +47,13 @@ class ButtonEvents extends EventEmitter {
 
   // called by parent when general purpose input value changes
   gpioChange (value) {
-    if (this.buttonState === STATE_DISABLED) return;
+    if (this.buttonState === STATE_DISABLED) return "disabled";
     value = (this.Config.usePullUp ? !value : value); // invert if pull up
     this.lastValue = value;
-    if (!this.debounce) this.debounceStart();
+    if (this.debounce) return "debounced";
+    if (!this.Config.timing.debounce) return "final";
+    this.debounceStart();
+    return "accepted";
   }
 
   // call before destruction to cleanup resources
@@ -61,13 +64,13 @@ class ButtonEvents extends EventEmitter {
     clearTimeout(this.emitTimer);
   }
 
-  // start the input signal debouce
+  // start the input signal debounce
   debounceStart () {
     this.debounce = true;
     this.debounceTimer = setTimeout(this.debounceComplete.bind(this), this.Config.timing.debounce);
   }
 
-  // debouce timed out, complete button change
+  // debounce timed out, complete button change
   debounceComplete () {
     this.emit(EVENT_BUTTON_CHANGED);
     if (this.lastValue) {

@@ -3,8 +3,8 @@
 Button event module used to debounce a digital input signal and produce button action events.
 
 The module provides a method that accepts a binary input state that is called each time
-an input changes. The module then uses timing, the current input state, and the past
-input state to generate events to denote the user's intention.
+an input changes. The module then uses timing and the last received input state to
+generate events to denote the user's intention.
 
 Debounce logic is used to clean up noisy button signals and the module generates a variety of
 high level button event types, i.e. 'clicked', 'double_clicked', 'pressed', 'released',
@@ -14,8 +14,15 @@ high level button event types, i.e. 'clicked', 'double_clicked', 'pressed', 'rel
 # Usage
 
 Create an instance of button-events for each button that requires events, add listeners
-for the desired button events, and call the gpioChange() method each time the button
+for the desired button events, and call the gpioChange(value) method each time the button
 input state changes.
+
+The gpioChange() method will return a status string to indicate how the value was handled.
+- **"disabled"**, The button event handler is disabled and will not process gpioChange() values.
+- **"debounced"**, The debounce timer is running and the input value has been updated with the last gpioChange() value.
+- **"accepted"**, The gpioChange() value has been accepted as the starting value and the debounce timer started.
+- **"final"**, The debounce timer is disabled and the gpioChange() value is accepted as the final value.
+
 
 Example
 ```javascript
@@ -33,7 +40,7 @@ gpio.on('change', (value) => upEvents.gpioChange(value));
 ```
 **NOTE** The example assumes the *gpio* object has been instantiated from some gpio library.
 
-A cleanup() method is provided to disable a buttone events instance, remove all listeners
+A cleanup() method is provided to disable a button events instance, remove all listeners
 and clear any active timers when the button events instance is no longer required.
 
 Example
@@ -44,7 +51,7 @@ const ButtonEvents = require('button-events');
 let bevents = new ButtonEvents();
 // watch for 'clicked' events on the up button
 bevents.on('button_event', (type) => {
-  console.log(`Buttone event type ${type}`);
+  console.log(`Button event type ${type}`);
 });
 
 // run for 30 seconds then cleanup
@@ -52,6 +59,21 @@ setTimeout(() => {
   bevents.cleanup();
 }, 30000);
 ```
+
+
+# Debounce
+
+When a hardware button is pressed or released it will initially produce an oscillating
+electrical signal before stabilizing at a set level. The oscillation of the signal will
+result in a bouncing value in the software that is monitoring the button signal.
+
+A debounce algorithm in the software is used to eliminate the bounce by waiting for input
+stabilization after a specified amount of time. The first call to gpioChange(value) will
+record the value and start a timer for debounce stabilization. Each followup call to
+gpioChange(value) will update the recorded input value. When the timer completes the
+final recorded value is processed as the stabilized input value.
+
+Use the debounce timing value to adjust the debounce timer as needed for the hardware used.
 
 
 # Configuration
@@ -89,6 +111,8 @@ and the delays used for button transitions to different states for clicked, doub
 
 The debounce timing value is the number of milliseconds to wait before assuming the
 input state has stabilized.
+
+**NOTE** To disable debounce set the timing.debounce value to 0.
 
 
 ### timing.pressed
