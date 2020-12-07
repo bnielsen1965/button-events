@@ -38,11 +38,19 @@ class ButtonEvents extends EventEmitter {
     super();
     this.Config = Object.assign({}, Defaults, Config);
     this.Config.timing = Object.assign({}, Defaults.timing, this.Config.timing); // deep copy of timing defaults
-    this.buttonState = STATE_IDLE;
-    this.lastValue = (this.Config.usePullUp ? 1 : 0); // assume module starts with button not pressed
     this.debounce = false;
     this.debounceTimer = null;
     this.emitTimer = null;
+    if (this.Config.hasOwnProperty('preread')) {
+      // use preread value to initialize state
+      this.buttonState = ((this.Config.usePullUp ? !this.Config.preread : this.Config.preread) ? STATE_RELEASE_WAIT : STATE_IDLE);
+      this.lastValue = ((this.Config.usePullUp ? !this.Config.preread : this.Config.preread) ? 1 : 0);
+    }
+    else {
+      // no preread, assum button starts not pressed
+      this.buttonState = STATE_IDLE;
+      this.lastValue = (this.Config.usePullUp ? 1 : 0);
+    }
   }
 
   // called by parent when general purpose input value changes

@@ -1,14 +1,15 @@
 # Button Events
 
-Button event module used to debounce a digital input signal and produce button action events.
+Button event module used to generate simple button events, i.e. *'clicked'*, *'double_clicked'*
+from complex user interactions with a button input.
 
-The module provides a method that accepts a binary input state that is called each time
-an input changes. The module then uses timing and the last received input state to
-generate events to denote the user's intention.
+The module is used to create class instances each with a method that accepts a binary input
+state that is called each time an input changes. The module then uses timing and the last
+received input state to generate events to denote the user's intention.
 
 Debounce logic is used to clean up noisy button signals and the module generates a variety of
-high level button event types, i.e. 'clicked', 'double_clicked', 'pressed', 'released',
-'clicked_pressed'.
+high level button event types, i.e. *'clicked'*, *'double_clicked'*, *'pressed'*, *'released'*,
+*'clicked_pressed'*.
 
 
 # Usage
@@ -70,26 +71,47 @@ result in a bouncing value in the software that is monitoring the button signal.
 A debounce algorithm in the software is used to eliminate the bounce by waiting for input
 stabilization after a specified amount of time. The first call to gpioChange(value) will
 record the value and start a timer for debounce stabilization. Each followup call to
-gpioChange(value) will update the recorded input value. When the timer completes the
+gpioChange(value) will update the recorded input value. When the debounce timer completes the
 final recorded value is processed as the stabilized input value.
 
 Use the debounce timing value to adjust the debounce timer as needed for the hardware used.
 
 
+## Disable Debounce
+
+If debounce is already provided by the electronic circuit or the software library used
+to monitor the button input then the debouce in the button-events instance should be
+disabled to avoid unnecessary debounce delays.
+
+To disable the debounce logic set the timing debounce value to 0.
+
+
 # Configuration
 
 The constructor for the button-events instance accepts a configuration object to adjust
-the operation of the event processor.
+the operation of the event processor. If the constructor is called without a configuration
+object then the default values will be used.
 
-Example:
+Default configuration:
 ```javascript
-let bevents = new ButtonEvents({
+const Defaults = {
   usePullUp: true,
   timing: {
     debounce: 30, // milliseconds to debounce input
     pressed: 200, // milliseconds to wait until we assume the user intended a button press event
     clicked: 200  // milliseconds to wait until we assume the user intended a button clicked event
   }
+};
+```
+
+Example configuration with non-default values:
+```javascript
+let bevents = new ButtonEvents({
+  usePullUp: false, // override defaults, circuit pulls buttons low when not pressed
+  timing: {
+    debounce: 0 // disable debounce, assume signal is debounced by circuit or gpio library
+  },
+  preread: inputValue // assign a preread value that was read from the gpio input before setting up button-events
 });
 ```
 
@@ -104,7 +126,7 @@ button on the input is pressed the value is 0.
 ## timing
 
 The timing object in the configuration holds timing settings for the debounce logic
-and the delays used for button transitions to different states for clicked, double clicked, etc.
+and the delays used for button transitions to different states for 'clicked', 'double_clicked', etc.
 
 
 ### timing.debounce
@@ -123,6 +145,14 @@ Milliseconds to wait after a button is pressed before settling on a pressed type
 ### timing.clicked
 
 Milliseconds to wait after a button is released before settling on a clicked type event.
+
+
+## preread
+
+The button-events module assumes that the button is not pressed when the instance is
+created. This assumption can be overridden by setting the *preread* binary value in
+the configuration. This value should be read from the button input just before creating
+the button-events instance for the button.
 
 
 # Events
@@ -153,8 +183,8 @@ The pressed event is emitted when a button is pressed and held down. This will e
 be followed with a released event when the button is released.
 
 ```javascript
-buttons.on('pressed', function (pin) {
-  console.log('User pressed button on pin ', pin);
+buttons.on('pressed', function () {
+  console.log('User pressed button.');
 });
 ```
 
@@ -164,8 +194,8 @@ When a button is pressed and released rapidly this is interpreted as a click and
 in the emit of the clicked event.
 
 ```javascript
-buttons.on('clicked', function (pin) {
-  console.log('User clicked button on pin ', pin);
+buttons.on('clicked', function () {
+  console.log('User clicked button.');
 });
 ```
 
@@ -176,8 +206,8 @@ then a clicked_pressed event will be emitted. Eventually when the button is rele
 then a released event will be emitted.
 
 ```javascript
-buttons.on('clicked_pressed', function (pin) {
-  console.log('User clicked then pressed button on pin ', pin);
+buttons.on('clicked_pressed', function () {
+  console.log('User clicked then pressed button.');
 });
 ```
 
@@ -187,8 +217,8 @@ If a clicked event is immediately followed with another clicked detection then i
 interpreted as a double click and a double_clicked event is emitted.
 
 ```javascript
-buttons.on('double_clicked', function (pin) {
-  console.log('User double clicked button on pin ', pin);
+buttons.on('double_clicked', function () {
+  console.log('User double clicked button.');
 });
 ```
 
@@ -199,8 +229,8 @@ it will wait for the user to release the pressed button. When this happens the r
 event is emitted.
 
 ```javascript
-buttons.on('released', function (pin) {
-  console.log('User released button on pin ', pin);
+buttons.on('released', function () {
+  console.log('User released button.');
 });
 ```
 
