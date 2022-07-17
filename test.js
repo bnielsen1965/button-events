@@ -1,6 +1,9 @@
 
 const ButtonEvents = require('./index.js');
 
+let passed;
+let watch = () => passed = true;
+
 let Noisy = true;
 
 let be = new ButtonEvents();
@@ -30,13 +33,25 @@ function setListeners (bi) {
 }
 
 async function testSequence() {
-  await click();
+  await test('Test clicked event...', click, 'clicked');
+  await test('Test double_clicked event...', doubleClicked, 'double_clicked');
+  await test('Test triple_clicked event...', tripleClicked, 'triple_clicked');
+  await test('Test quadple_clicked event...', quadrupleClicked, 'quadruple_clicked');
+  await test('Test press event..', pressRelease, 'pressed');
+  await test('Test released event..', pressRelease, 'released');
+  await test('Test clicked_pressed...', clickedPressedRelease, 'clicked_pressed');
+  await test('Test double_clicked_pressed...', doubleClickedPressedRelease, 'double_clicked_pressed');
+  await test('Test triple_clicked_pressed...', tripleClickedPressedRelease, 'triple_clicked_pressed');
+}
+
+async function test (msg, method, event) {
+  passed = false;
+  be.on(event, watch);
+  console.log(msg);
+  await method();
   await sleep(500);
-  await doubleClicked();
-  await sleep(500);
-  await pressRelease();
-  await sleep(500);
-  await clickPressRelease();
+  be.removeListener(event, watch);
+  if (!passed) console.log('Test failed.');
 }
 
 async function click () {
@@ -51,15 +66,47 @@ async function doubleClicked () {
   await click();
 }
 
+async function tripleClicked () {
+  await click();
+  await sleep(100);
+  await click();
+  await sleep(100);
+  await click();
+}
+
+async function quadrupleClicked () {
+  await click();
+  await sleep(100);
+  await click();
+  await sleep(100);
+  await click();
+  await sleep(100);
+  await click();
+}
+
 async function pressRelease () {
   await press();
   await sleep(800);
   await release();
 }
 
-async function clickPressRelease () {
-  await click();
-  await sleep(100);
+async function clickedPressedRelease () {
+  return await clickedPressedCountRelease(1);
+}
+
+async function doubleClickedPressedRelease () {
+  return await clickedPressedCountRelease(2);
+}
+
+async function tripleClickedPressedRelease () {
+  return await clickedPressedCountRelease(3);
+}
+
+async function clickedPressedCountRelease (clicks) {
+  for (let i =0; i < clicks; i++) {
+    await click();
+    await sleep(100);
+  }
   await pressRelease();
 }
 

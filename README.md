@@ -1,7 +1,7 @@
 # Button Events
 
-Button event module used to generate simple button events, i.e. *'clicked'*, *'double_clicked'*
-from complex user interactions with a button input.
+Button event module used to generate simple button events, i.e. *'clicked'*, 
+*'double_clicked'*, etc., from complex user interactions with a button input.
 
 The module is used to create class instances each with a method that accepts a binary input
 state that is called each time an input changes. The module then uses timing and the last
@@ -9,7 +9,7 @@ received input state to generate events to denote the user's intention.
 
 Debounce logic is used to clean up noisy button signals and the module generates a variety of
 high level button event types, i.e. *'clicked'*, *'double_clicked'*, *'pressed'*, *'released'*,
-*'clicked_pressed'*.
+*'clicked_pressed'*, etc.
 
 
 # Usage
@@ -166,6 +166,10 @@ Possible events include the following...
 - clicked
 - clicked_pressed
 - double_clicked
+- double_clicked_pressed
+- triple_clicked
+- triple_clicked_pressed
+- quadruple_clicked
 - released
 
 **Unified event for user intent, passes the user event state**
@@ -221,6 +225,23 @@ buttons.on('double_clicked', function () {
   console.log('User double clicked button.');
 });
 ```
+
+
+## double_clicked_pressed
+If a double clicked is followed with pressing the button again then the 
+*double_clicked_pressed* event will be emitted.
+
+
+## triple_clicked
+The triple clicked event follows a double_clicked_pressed.
+
+
+## triple_clicked_pressed
+A press following the triple clicked event results in tirple_clicked_pressed.
+
+
+## quadruple_clicked
+A quadruple_clicked event follows the triple_clicked_pressed event.
 
 
 ## released

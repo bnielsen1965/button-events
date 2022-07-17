@@ -7,7 +7,11 @@ const STATE_PRESSED = 2;
 const STATE_CLICKED = 3;
 const STATE_CLICKED_PRESSED = 4;
 const STATE_DOUBLE_CLICKED = 5;
-const STATE_RELEASE_WAIT = 6;
+const STATE_DOUBLE_CLICKED_PRESSED = 6;
+const STATE_TRIPLE_CLICKED = 7;
+const STATE_TRIPLE_CLICKED_PRESSED = 8;
+const STATE_QUADRUPLE_CLICKED = 9;
+const STATE_RELEASE_WAIT = 10;
 
 // low level button state events
 const EVENT_BUTTON_CHANGED = 'button_changed';
@@ -19,6 +23,10 @@ const EVENT_BUTTON_PRESSED = 'pressed';
 const EVENT_BUTTON_CLICKED = 'clicked';
 const EVENT_BUTTON_CLICKED_PRESSED = 'clicked_pressed';
 const EVENT_BUTTON_DOUBLE_CLICKED = 'double_clicked';
+const EVENT_BUTTON_DOUBLE_CLICKED_PRESSED = 'double_clicked_pressed';
+const EVENT_BUTTON_TRIPLE_CLICKED = 'triple_clicked';
+const EVENT_BUTTON_TRIPLE_CLICKED_PRESSED = 'triple_clicked_pressed';
+const EVENT_BUTTON_QUADRUPLE_CLICKED = 'quadruple_clicked';
 const EVENT_BUTTON_RELEASED = 'released';
 
 // unified button event type that passes the button event status
@@ -92,19 +100,26 @@ class ButtonEvents extends EventEmitter {
   processLastValue () {
     this.emit(EVENT_BUTTON_CHANGED);
     if (this.lastValue) {
+      clearTimeout(this.emitTimer);
       // debounced button press
       this.emit(EVENT_BUTTON_PRESS);
       // determine how to handle button press based on current button state
       switch (this.buttonState) {
         case STATE_CLICKED:
           // transition from a clicked state to clicked and pressed
-          clearTimeout(this.emitTimer);
           this.buttonState = STATE_CLICKED_PRESSED;
+          break;
+
+        case STATE_DOUBLE_CLICKED:
+          this.buttonState = STATE_DOUBLE_CLICKED_PRESSED;
+          break;
+
+        case STATE_TRIPLE_CLICKED:
+          this.buttonState = STATE_TRIPLE_CLICKED_PRESSED;
           break;
 
         default:
           // begin the pressed state
-          clearTimeout(this.emitTimer);
           this.buttonState = STATE_PRESSED;
       }
       // delay event to allow for further state transition
@@ -127,6 +142,22 @@ class ButtonEvents extends EventEmitter {
           // transition from clicked and pressed to double clicked
           clearTimeout(this.emitTimer);
           this.buttonState = STATE_DOUBLE_CLICKED;
+          // delay event to allow for further state transition
+          this.emitTimer = setTimeout(this.emitState.bind(this), this.Config.timing.clicked);
+          break;
+
+        case STATE_DOUBLE_CLICKED_PRESSED:
+          // transition from double clicked and pressed to triple clicked
+          clearTimeout(this.emitTimer);
+          this.buttonState = STATE_TRIPLE_CLICKED;
+          // delay event to allow for further state transition
+          this.emitTimer = setTimeout(this.emitState.bind(this), this.Config.timing.clicked);
+          break;
+
+        case STATE_TRIPLE_CLICKED_PRESSED:
+          // transition from triple clicked and pressed to quadruple clicked
+          clearTimeout(this.emitTimer);
+          this.buttonState = STATE_QUADRUPLE_CLICKED;
           // no further transitions
           this.emitState();
           break;
@@ -168,6 +199,34 @@ class ButtonEvents extends EventEmitter {
         // emit event and transition to idle
         this.emit(EVENT_BUTTON_DOUBLE_CLICKED);
         this.emit(EVENT_BUTTON_STATUS, EVENT_BUTTON_DOUBLE_CLICKED);
+        this.buttonState = STATE_IDLE;
+        break;
+
+      case STATE_DOUBLE_CLICKED_PRESSED:
+        // emit event and transition to release wait
+        this.emit(EVENT_BUTTON_DOUBLE_CLICKED_PRESSED);
+        this.emit(EVENT_BUTTON_STATUS, EVENT_BUTTON_DOUBLE_CLICKED_PRESSED);
+        this.buttonState = STATE_RELEASE_WAIT;
+        break;
+
+      case STATE_TRIPLE_CLICKED:
+        // emit event and transition to idle
+        this.emit(EVENT_BUTTON_TRIPLE_CLICKED);
+        this.emit(EVENT_BUTTON_STATUS, EVENT_BUTTON_TRIPLE_CLICKED);
+        this.buttonState = STATE_IDLE;
+        break;
+
+      case STATE_TRIPLE_CLICKED_PRESSED:
+        // emit event and transition to release wait
+        this.emit(EVENT_BUTTON_TRIPLE_CLICKED_PRESSED);
+        this.emit(EVENT_BUTTON_STATUS, EVENT_BUTTON_TRIPLE_CLICKED_PRESSED);
+        this.buttonState = STATE_RELEASE_WAIT;
+        break;
+
+      case STATE_QUADRUPLE_CLICKED:
+        // emit event and transition to idle
+        this.emit(EVENT_BUTTON_QUADRUPLE_CLICKED);
+        this.emit(EVENT_BUTTON_STATUS, EVENT_BUTTON_QUADRUPLE_CLICKED);
         this.buttonState = STATE_IDLE;
         break;
 
