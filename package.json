@@ -1,6 +1,6 @@
 {
   "name": "button-events",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Button event module used to debounce a digital input signal and produce button action events.",
   "main": "index.js",
   "scripts": {

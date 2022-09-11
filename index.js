@@ -1,5 +1,6 @@
 
 const EventEmitter = require('events').EventEmitter;
+const Trainer = require('./trainer');
 
 const STATE_DISABLED = 0;
 const STATE_IDLE = 1;
@@ -58,6 +59,13 @@ class ButtonEvents extends EventEmitter {
       // no preread, assum button starts not pressed
       this.buttonState = STATE_IDLE;
       this.lastValue = (this.Config.usePullUp ? 1 : 0);
+    }
+    if (this.Config.trainer) {
+      this.Config.timing.debounce = 0;
+      this.trainer = new Trainer(this);
+      this.trainer
+      .on('training_start', () => this.emit('training_start'))
+      .on('training_report', report => this.emit('training_report', report));
     }
   }
 
